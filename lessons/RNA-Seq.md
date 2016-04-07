@@ -1,54 +1,46 @@
 ---
-layout: post
-title: "Introduction to RNA-Seq - updated"
-modified:
-categories: courses
-excerpt:
-tags: [ngs, rna, introduction, galaxy, qc, alignment, de]
-image:
-  feature:
-date: 2015-10-22
+title: "Introduction to RNA-Seq using Galaxy"
+author: "Harvard Chan Bioinformatics Core"
+date: "Thursday, April 07, 2016"
 ---
 
-<section id="table-of-contents" class="toc">
-  <header>
-    <h3>Overview</h3>
-  </header>
-<div id="drawer" markdown="1">
-*  Auto generated table of contents
-{:toc}
-</div>
-</section><!-- /#table-of-contents -->
+Approximate time: 4 hours
 
-We will be retracing most of the steps required to get from an Illumina FASTQ sequence file received from a sequencing facility as part of an RNA sequencing analysis all the way to transcript assembly and identifying  differentially expressed genes in two different ways. We will focus on the following  steps: initial quality control, read mapping, transcript isoform determination (reference-guided) followed by quantification. This session borrows material from [Jeremy's RNA-seq sample history](https://main.g2.bx.psu.edu/u/jeremy/p/galaxy-rna-seq-analysis-exercise), a [Galaxy workflow](https://usegalaxy.org/u/mejia-guerra/w/basic-rna-seq-analysis---differential-expression-functional-genomics-workshop-2012) and the [UC Davis Bioinformatics Core workshop](http://training.bioinformatics.ucdavis.edu/docs/2012/05/RNA/index.html). 
+## Learning Objectives:
+
+* Understand the theory for each step in the RNA-Seq workflow
+* Become familiar with the terminology and tools used in an RNA-Seq workflow
+* Be able to confidently communicate with bioinformaticians and to understand RNA-Seq workflows in peer-reviewed literature
+
+We will be retracing most of the steps required to get from an Illumina FASTQ sequence file received from a sequencing facility as part of an RNA sequencing analysis all the way to transcript assembly and identifying  differentially expressed genes in two different ways. We will focus on the following  steps: initial quality control, read mapping, transcript isoform determination (reference-guided) followed by quantification. This session borrows material from [Jeremy's RNA-seq sample history](https://main.g2.bx.psu.edu/u/jeremy/p/galaxy-rna-seq-analysis-exercise), a [Galaxy workflow](https://usegalaxy.org/u/mejia-guerra/w/basic-rna-seq-analysis---differential-expression-functional-genomics-workshop-2012) and the [UC Davis Bioinformatics Core workshops](http://bioinformatics.ucdavis.edu/training/documentation/). 
 
 
-#### Access to Galaxy
-{:.no_toc}
+### Access to Galaxy
 
-Before tackling this module you should have a [working knowledge of Galaxy](http://bioinformatics.sph.harvard.edu/ngs-workshops/courses/introduction-to-galaxy/), understand how to find relevant tools, annotate your history or get new data sets from the data library.  As a result we will minimize the screenshots and pointers in this document, focusing just on _what_ to do while guiding you through the process in class. As always, do ask questions and most importantly collaborate with your fellow students.
+Before tackling this module you should have a [working knowledge of Galaxy](#####), understand how to find relevant tools, annotate your history or get new data sets from the data library.  As a result we will minimize the screenshots and pointers in this document, focusing just on _what_ to do while guiding you through the process in class. As always, do ask questions and most importantly collaborate with your fellow students.
 
 In order for you to be able to access Galaxy on your assigned dedicated machine on the Cloud, you have been given a web or IP address in the form of A.B.C.D where A, B, C and D are numbers separated by dots. You will need it in order to access Galaxy from the web browser on your laptop. 
 
 
-#### Changes to the default Galaxy installation
-{:.no_toc}
+### Changes to the default Galaxy installation
 
-The default Galaxy instance relies on [TopHat/Cufflinks](http://tophat.cbcb.umd.edu/manual.html) for RNA-seq analysis, part of a well-tested workflow system. If you are not interested in discovering splice variants -- which can be prone to false positives -- a simple alignment with TopHat followed by analysis of differential expression with [DESeq](http://bioconductor.org/packages/release/bioc/html/DESeq.html) / [DSS](http://www.bioconductor.org/packages/release/bioc/html/DSS.html) (genes) or [DEXSeq](http://bioconductor.org/packages/release/bioc/html/DEXSeq.html) (exons) is likely to be simpler. For this workshop we added a more recent version ([TopHat2](http://genomebiology.com/2013/14/4/r36)) from the [Galaxy ToolShed](http://toolshed.g2.bx.psu.edu/) to our Galaxy instance, and will be running [edgeR](http://www.bioconductor.org/packages/release/bioc/html/edgeR.html) for the differential expression analysis.
+The default Galaxy instance relies on [TopHat/Cufflinks](http://ccb.jhu.edu/software/tophat/index.shtml) for RNA-seq analysis, part of a well-tested workflow system. If you are not interested in discovering splice variants -- which can be prone to false positives -- a simple alignment with TopHat followed by analysis of differential expression with [DESeq](http://bioconductor.org/packages/release/bioc/html/DESeq.html) / [DSS](http://www.bioconductor.org/packages/release/bioc/html/DSS.html) (genes) or [DEXSeq](http://bioconductor.org/packages/release/bioc/html/DEXSeq.html) (exons) is likely to be simpler. For this workshop we added a more recent version ([TopHat2](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2013-14-4-r36)) from the [Galaxy ToolShed](http://toolshed.g2.bx.psu.edu/) to our Galaxy instance, and will be running [edgeR](http://www.bioconductor.org/packages/release/bioc/html/edgeR.html) for the differential expression analysis.
 
-> If you want to work through this session outside of this course, take a look at our section on [how to set up your own Galaxy server](http://bioinformatics.sph.harvard.edu/ngs-workshops/posts/running-your-own-galaxy-instance/) or download the [complete introduction dataset](https://dl.dropbox.com/u/407047/Blog/Data/RNA-Seq_Data_files.tgz) and use one of the public Galaxy instances.
 
-## Quality control
+## Sequencing dataset
 
-The dataset we are using is part of a larger study described in [Kenny PJ et al, Cell Rep 2014](http://www.ncbi.nlm.nih.gov/pubmed/25464849). The authors are investigating interactions between various genes involved in Fragile X syndrome, a disease in which there is aberrant production of the FMRP protein. FMRP has been linked to the microRNA pathway, as it has been shown to be involved in miRNA mediated translational suppresion. **The authors sought to show that FMRP associates with the RNA helicase MOV10 for regulation of brain mRNAs.**
+The dataset we are using is part of a larger study described in [Kenny PJ et al, Cell Rep 2014](http://www.ncbi.nlm.nih.gov/pubmed/25464849). The authors are investigating interactions between various genes involved in Fragile X syndrome, a disease in which there is aberrant production of the FMRP protein. FMRP has been linked to the microRNA pathway, as it has been shown to be involved in miRNA mediated translational suppression. **The authors sought to show that FMRP associates with the RNA helicase MOV10 for regulation of brain mRNAs.**
 
 From this study we are using the [RNA-Seq](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE50499) data which is publicly available in the [SRA](http://www.ncbi.nlm.nih.gov/sra). The RNA was extracted from HEK293F cells that were transfected with a MOV10 transgene and normal control cells. Using this data, we will evaluate transcriptional patterns associated with MOV10 overexpression. 
 
 The libraries for this dataset are stranded and were generated using the dUTP method. Sequencing was carried out on the Illumina HiSeq-2500 for 100bp single end reads. The full dataset was sequenced to ~40 million reads per sample, but for this workshop we will be looking at a small subset on chr1 (~300,000 reads/sample) to keep things manageable and allow algorithms to finish within a few minutes. We will switch over to using all samples for the differential expression analysis by retrieving them from the `Data Libraries` in the `Shared Data` menu as needed.For each group we have three replicates as described in the figure below.
 
 
-![Experimental_design](../../images/screenshots/exp_design.png)
+![Experimental_design](../img/exp_design.png)
 
+> If you want to work through this session outside of this course, take a look at our section on [how to set up your own Galaxy server](http://bioinformatics.sph.harvard.edu/ngs-workshops/posts/running-your-own-galaxy-instance/) or download the complete dataset from the SRA and use one of the public Galaxy instances.
+
+## Quality control
 
 ### Exploring the FASTQ files
 
@@ -60,7 +52,7 @@ This is the kind of data you would expect to receive from your sequencing core f
 
 > Take a look at the file contents using Galaxy's preview and file view functionality. What additional information does FASTQ contain over FASTA? How many reads are in your file? Pick the first sequence in your FASTQ file and note the identifier. What is the quality encoding character of it's first and last nucleotide, respectively?
 
-## Quality Controls
+### Quality Controls
 
 The FASTQ file contains output reads from the sequencer that need to be mapped to a reference genome for us to understand where those reads came from on the sequenced genome. However, before we can delve into read mapping, we first need to make sure that our preliminary data is of sufficiently high quality. This involves several steps:
 
@@ -72,7 +64,7 @@ The FASTQ file contains output reads from the sequencer that need to be mapped t
 
 Iterate through steps 2-5 until the data is of sufficient quality before proceeding to mapping.
 
-### Obtain Quality Statistics
+#### Obtain Quality Statistics
 
 Under the `NGS:QC and manipulation` tool heading, select the `Compute quality statistics` tool (from the `FASTX toolkit` section) and apply it to your FASTQ file.
 
@@ -90,7 +82,7 @@ Some of the diagnostic plots from a [Core conference call](http://bioinfo-core.o
 
 Depending on your FASTQ results you may need to test for contamination (either by vector or other sourcers) and/or remove adapter sequences from your read prior to alignment. It is good to remove these sequences to increase your mapping efficiency. 
 
-### Screen for contamination
+#### Screen for contamination
 
 Not all required tools are available through Galaxy just yet. For example, depending on the source of your data you probably want to screen your reads for vector or adapter contamination using tools such as [SeqTrim](https://dl.dropbox.com/u/407047/Blog/Documents/Literature/QC/BMC%20Bioinformatics%202010%20Falgueras.pdf) (PDF). Other tools check for sample cross-contamination ([ContEst](https://dl.dropbox.com/u/407047/Blog/Documents/Literature/QC/Bioinformatics%202011%20Cibulskis.pdf) (PDF)) or contamination with data from other species ([FASTQ Screen](http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/)).  For now we will just explore how you can spot potential contamination from the FastQC results alone. 
 
@@ -100,11 +92,11 @@ Compare your own FastQC results with a [pre-generated FastQC summary](http://dl.
 
 > Study the report. Is there any vector contamination present? Is there any adapter contamination present?
 
-As an emergency solution to remove contaminating sequences, Galaxy comes with a way to `Clip adapter sequences`. If you notice a particularly strong contamination with a vector or primer you can use your FASTQ file as the `Library to clip`, keep the default `Minimum sequence length`, and enter the sequence you spotted in the FASTQC report as the `Adapter` to clip. You probably want to keep both clipped and unclipped sequences in this case; keeping only reads that contained an adapter or barcode can be useful if you expect this to be a feature of all valid reads. For command-line use tools such as [cutadapt](https://code.google.com/p/cutadapt/) or [AlienTrimmer](ftp://ftp.pasteur.fr/pub/gensoft/projects/AlienTrimmer/) are more versatile and less labor-intensive to use.
+As an emergency solution to remove contaminating sequences, Galaxy comes with a way to `Clip adapter sequences`. If you notice a particularly strong contamination with a vector or primer you can use your FASTQ file as the `Library to clip`, keep the default `Minimum sequence length`, and enter the sequence you spotted in the FASTQC report as the `Adapter` to clip. You probably want to keep both clipped and unclipped sequences in this case; keeping only reads that contained an adapter or barcode can be useful if you expect this to be a feature of all valid reads. For command-line use tools such as [cutadapt](https://cutadapt.readthedocs.org/en/stable/) or [AlienTrimmer](http://www.ncbi.nlm.nih.gov/pubmed/23912058) are more versatile and less labor-intensive to use.
  
 Normally, you would take the filtered output and feed it back into Galaxy, but our dataset has very little contamination so we will move on with the original data set. 
 
-### Filter by quality
+#### Filter by quality
 
 As we do not plan on using our data to identify genomic variation individual sequencing errors become less of a problem as long as the sequence can be still mapped to the reference genome. Still, you want to filter sequences where the overall quality is just too low. 
 
@@ -113,7 +105,7 @@ After reviewing the quality diagnostics from your FASTQC report, choose an appro
 > Do you have an improvement in read quality? What has changed and why? What percentage of reads did you retain at your cutoff?
 
 
-### Read Trimming
+#### Read Trimming
 
 After the general filtering which removes sequence reads of overall low quality it can be a good idea to trim the end of your reads, cutting away nucleotides at the end that are still of low-quality
 
@@ -151,12 +143,17 @@ Aligning RNA-seq reads to a reference genome (`hg19`) introduces unique issues. 
 
 #### How does TopHat work?
 
-Straight from the [TopHat manual](http://tophat.cbcb.umd.edu/manual.html):
+Straight from the [TopHat manual](http://ccb.jhu.edu/software/tophat/manual.shtml):
 
 _"TopHat finds splice junctions without a reference annotation. By first mapping RNA-Seq reads to the genome, TopHat identifies potential exons, since many RNA-Seq reads will contiguously align to the genome. Using this initial mapping information, TopHat builds a database of possible splice junctions, and then maps the reads against these junctions to confirm them.
-Short read sequencing machines can currently produce reads 100bp or longer, but many exons are shorter than this, and so would be missed in the initial mapping. TopHat solves this problem by splitting all input reads into smaller segments, and then mapping them independently. The segment alignments are "glued" back together in a final step of the program to produce the end-to-end read alignments._
+Short read sequencing machines can currently produce reads 100bp or longer, but many exons are shorter than this, and so would be missed in the initial mapping. TopHat solves this problem by splitting all input reads into smaller segments, and then mapping them independently. The segment alignments are "glued" back together in a final step of the program to produce the end-to-end read alignments (depicted below)._
 
 _TopHat generates its database of possible splice junctions from three sources of evidence. The first source is pairings of "coverage islands", which are distinct regions of piled up reads in the initial mapping. Neighboring islands are often spliced together in the transcriptome, so TopHat looks for ways to join these with an intron. The second source is only used when TopHat is run with paired end reads. When reads in a pair come from different exons of a transcript, they will generally be mapped far apart in the genome coordinate space. When this happens, TopHat tries to "close" the gap between them by looking for subsequences of the genomic interval between mates with a total length about equal to the expected distance between mates. The "introns" in this subsequence are added to the database. The third, and strongest, source of evidence for a splice junction is when two segments from the same read are mapped far apart, or when an internal segment fails to map."_
+
+
+
+![tophat](../img/tophat_1.png)
+![tophat](../img/tophat_2.png)
 
 Although TopHat can find splice junctions without a reference annotation, we will give it some guidance by supplying it with one. We will use the UCSC chr19 gene annotations as a gene annotation model (`chr1-hg19_genes.gtf` from the `Sequence and reference data` folder in the `RNA-Seq` library). 
 
@@ -200,19 +197,19 @@ Also take a look at the other reports.
 
 ### Explore alignment in a genome browser
 
-Take a look at your alignment in IGV (Integrative Genomics Viewer). To do so, first expand the alignment result (the `accepted hits` BAM file) in your history and click on the `web current` link beside `display with IGV`. This will download IGV to your machine. It should start automatically after a few security warnings (if not, find the `igv.jlnp` file and click it yourself).
+Take a look at your alignment in IGV (Integrative Genomics Viewer). To do so, first expand the alignment result (the `accepted hits` BAM file) in your history and click on the `web current` link beside `display with IGV`. This will download IGV to your machine. It should start automatically after a few security warnings (if not, find the `igv.jlnp` file and click it yourself-you can force open the file by right-clicking).
 
 You should see a window that looks like this:
 
-[![IGV Startup](../../images/screenshots/IGV_RNA_1.png)](../../images/screenshots/IGV_RNA_1.png)
+[![IGV Startup](../img/IGV_RNA_1.png)](../../images/screenshots/IGV_RNA_1.png)
 
 Click in the search bar and enter the gene name MOV10:
  
-[![Highlight](../../images/screenshots/IGV_RNA_2.png)](../../images/screenshots/IGV_RNA_2.png)
+[![Highlight](../img/IGV_RNA_2.png)](../../images/screenshots/IGV_RNA_2.png)
 
 You should now be able to see the individual reads, you can zoom in further using the controls on the upper right and scroll around by clicking and dragging in the highlighted alignment track. Note that IGV automatically translated the gene symbol into the matching genomic coordinates for your genome build:
 
-[![Sample Gene](../../images/screenshots/IGV_RNA_3.png)](../../images/screenshots/IGV_RNA_3.png)
+[![Sample Gene](../img/IGV_RNA_3.png)](../../images/screenshots/IGV_RNA_3.png)
 
 > Can you find any reads that span an intron (i.e. the read is derived from processed RNA)?
 
@@ -222,7 +219,7 @@ Next, add the TopHat generated `splice junctions` (BED format). As Galaxy does n
 
 If you have moved around in the browser navigate back to MOV10. You should now see the the putative splice junctions (highlighted track)…
 
-[![Junctions](../../images/screenshots/IGV_RNA_4.png)](../../images/screenshots/IGV_RNA_4.png)
+[![Junctions](../img/IGV_RNA_4.png)](../../images/screenshots/IGV_RNA_4.png)
 
 ... in addition to the mapped reads and gene model (which can serve as an internal control). 
 
@@ -233,7 +230,7 @@ If you have moved around in the browser navigate back to MOV10. You should now s
 
 As before, if any of the previous steps did not work out you can retrieve intermediate results from the `Snapshot` library under `Shared Data`. We have deposited the TopHat2-aligned reads in BAM format (`mov10oe1_accepted_hits.bam`).
 
-If you are just interested in differential gene expression a very simple option is to feed the TopHat2-aligned reads directly into `CuffDiff`, the final tool of this session. The [UC Davis RNA-Seq course](http://training.bioinformatics.ucdavis.edu/docs/2012/05/RNA/index.html) has basic information on how to do so, although you most like would want to switch to other tools such as DESeq or edgeR (see below). 
+If you are just interested in differential gene expression a very simple option is to feed the TopHat2-aligned reads directly into `CuffDiff`, the final tool of this session. The [UC Davis RNA-Seq course](http://bioinformatics.ucdavis.edu/training/documentation/) has basic information on how to do so, although you most like would want to switch to other tools such as DESeq or edgeR (see below). 
 
 Here, we first explore differential expression after transcript assembly which has the drawback of generating more false positives, but can also detect novel transcripts before moving on to a comparison of read counts with edgeR.
 
@@ -242,7 +239,7 @@ Here, we first explore differential expression after transcript assembly which h
 
 A number of different approaches exist to quantify gene expression counts and assess significant differences between sample groups (check the resources section for pointers). Most require some sort of unification between samples, for example either generating or providing gene models between which to compare the mapped read counts.
 
-We will start by assembling the reads mapped to exons and splice junctions into complete transcripts using [Cufflinks](http://cufflinks.cbcb.umd.edu/manual.html#cufflinks). Similar to TopHat the algorithm comes with a large number of parameters; we recommend working through the manual before applying it to your own data. Like TopHat, CuffLinks can also run naively (i.e., assembling transcripts _de novo_ rather than using known gene models), but it is less prone to false positives when guided by a reference annotation. We will supply it with the same annotation we used for the TopHat alignment:
+We will start by assembling the reads mapped to exons and splice junctions into complete transcripts using [Cufflinks](http://cole-trapnell-lab.github.io/cufflinks/cufflinks/index.html). Similar to TopHat the algorithm comes with a large number of parameters; we recommend working through the manual before applying it to your own data. Like TopHat, CuffLinks can also run naively (i.e., assembling transcripts _de novo_ rather than using known gene models), but it is less prone to false positives when guided by a reference annotation. We will supply it with the same annotation we used for the TopHat alignment:
 
 1. Select `Cufflinks` from the "NGS:RNA Analysis" section
 2. Select your "accepted hits" output from TopHat2 as the `SAM or BAM file of aligned RNA-Seq reads:`
@@ -261,9 +258,9 @@ While CuffLinks is running to browse through its manual or explore a paper from 
 
 ## Merge transcripts from different samples
 
-In your own analyses, you will have multiple conditions and (hopefully!) multiple replicates for those conditions. Each sample will have its own set of assembled  transcripts or gene model, which can make comparing the samples a challenge. To do so, you will need to 'merge' (unify) the gene models between different samples using [Cuffmerge](http://cufflinks.cbcb.umd.edu/manual.html#cuffmerge).
+In your own analyses, you will have multiple conditions and (hopefully!) multiple replicates for those conditions. Each sample will have its own set of assembled  transcripts or gene model, which can make comparing the samples a challenge. To do so, you will need to 'merge' (unify) the gene models between different samples using [Cuffmerge](http://cole-trapnell-lab.github.io/cufflinks/cuffmerge/index.html).
 
-Cuffmerge helps analyze the transcribed fragments in an assembly by comparing assembled transcripts to a reference annotation using [Cuffcompare](http://cufflinks.cbcb.umd.edu/manual.html#cuffcompare), filtering out likely artifacts and merging the finally merging the multiple sample derived assemblies.
+Cuffmerge helps analyze the transcribed fragments in an assembly by comparing assembled transcripts to a reference annotation using [Cuffcompare](http://cole-trapnell-lab.github.io/cufflinks/cuffcompare/index.html), filtering out likely artifacts and merging the finally merging the multiple sample derived assemblies.
 
 ### Bringing in replicates and another sample
  
@@ -284,7 +281,7 @@ Again, use the `chr1-hg19_genes.gtf` gene model as a reference annotation. Use s
 
 ## Differential expression with CuffDiff
 
-As the last step, [Cuffdiff](http://cufflinks.cbcb.umd.edu/manual.html#cuffdiff) will use the TopHat2-aligned reads (the `Accepted Hits` file) together with the unified transcript model (the 'merged transcripts' file generated by Cuffmerge) to find transcripts exhibiting differential expression between your samples. 
+As the last step, [Cuffdiff](http://cole-trapnell-lab.github.io/cufflinks/cuffdiff/index.html) will use the TopHat2-aligned reads (the `Accepted Hits` file) together with the unified transcript model (the 'merged transcripts' file generated by Cuffmerge) to find transcripts exhibiting differential expression between your samples. 
 
 > Note that doing so without biological replicates is not advised as the results would be _very_ unreliable.
 
@@ -354,7 +351,7 @@ Some frameworks allow for a more interaction exploration of RNA-Seq-based count 
 
 We need to specify to Degust which samples belong to which groups. Click on `Add condition`, and give the condition a name (i.e., Ctrl) and from the drop-down menu select the appropriate samples. Do the same for Mov10 Add the `Gene Link` column if you want to, then `Save changes` will save the configuration and press `View` to generate results. You should be directed to a window that looks similar to the screenshot below:
 
-[![Degust](../../images/screenshots/mov10_degust.png)](../../images/screenshots/mov10_degust.png)
+[![Degust](../img/mov10_degust.png)](../../images/screenshots/mov10_degust.png)
 
 * At the very top you will find an MA plot showing expression for two conditions. Each dot represents a gene and is color-coded by FDR (red = more significant). You can click and drag on the plot to select genes within a rectangle - the heatmap and table below will be filtered to only those genes. 
 * The heatmap shows the log fold-change for each gene shown in the MA plot above. Each vertical strip corresponds to a gene. Hovering the mouse over the heatmap will show the corresponding gene in the plot above
@@ -368,7 +365,7 @@ The gene table should update automatically and show you the genes filtered to sh
 
 A large number of methods and external tools are available to make sense of a gene list, most of which revolve around deteching functional enrichment in Gene Ontology, curated pathways or networks. A post on [Getting Genetics Done](http://gettinggeneticsdone.blogspot.com/2012/03/pathway-analysis-for-high-throughput.html) should get you started, and we will expand this section for future workshops. For now we will explore two standard approaches that cover the basics, giving you an idea whether your experimental setup worked.
 
-Since there's relatively little we can get in terms of functional enrichment given that you are only looking at ~300,000 bp mapping to chr1, we have provided the [gene list](hhttps://dl.dropboxusercontent.com/u/204381225/Galaxy_nanocourses/Mov10_full_gene_list.txt) for the entire dataset.
+Since there's relatively little we can get in terms of functional enrichment given that you are only looking at ~300,000 bp mapping to chr1, we have provided the [gene list](../results/genelist_edgeR_Mov10oe_1.0FC.txt) for the entire dataset.
 
 ### Gene Ontology
 
@@ -377,7 +374,7 @@ Since there's relatively little we can get in terms of functional enrichment giv
 * Cut and paste the gene symbols into the g:Profiler `Query` box; take your time explore some of the additional options
 * Click on `g:Profile!`
 
-[![g:Profiler](../../images/screenshots/mov10_gprofiler.png)](../../images/screenshots/mov10_gprofiler.png)
+[![g:Profiler](../img/mov10_gprofiler.png)](../../images/screenshots/mov10_gprofiler.png)
 
 > Explore the results. The output is a spreadsheet with enrichment of GO terms, pathway / disease enrichments, miRNA and TF-targets as well as a basic visualization. It is also worthwhile to capture the gene names and descriptions table.
 
@@ -385,7 +382,7 @@ To provide additional graphic representations you can fall back to [Revigo](http
 
 > Time permitting, extract the GO identifiers obtained from g:Profile and import them into Revigo. You probably want to switch the g:Profiler output from `Graphical (PNG)` to `Excel spreadhseet (XLS)` to be able to select GO identifiers and -- optionally -- p-values. 
 
-[![Revigo](../../images/screenshots/mov10_revigo.png)](../../images/screenshots/mov10_revigo.png)
+[![Revigo](../img/mov10_revigo.png)](../../images/screenshots/mov10_revigo.png)
 
 ### Network-based
 
@@ -400,11 +397,11 @@ There are almost too many network-based tools out there, but [GeneMania](http://
 
 Navigate to the GeneMania website and cut and paste your identifiers again, making sure you pick `H. sapiens` as species. Open the advanced options and decide what kind of interaction information you would like to use to connect the genes in your list:
 
-[![GeneMania](../../images/screenshots/mov10_genemania.png)](../../images/screenshots/mov10_genemania.png)
+[![GeneMania](../img/mov10_genemania.png)](../../images/screenshots/mov10_genemania.png)
 
 GeneMania enables you to add 'related' or linker genes to the results. Those are genes that were not present in your input list, but connect your genes in some way:
 
-[![Linker](../../images/screenshots/mov10_genemania_linker.png)](../../images/screenshots/mov10_genemania_linker.png)
+[![Linker](../img/mov10_genemania_linker.png)](../../images/screenshots/mov10_genemania_linker.png)
 
 Pick a number and click on `Go`. 
 
