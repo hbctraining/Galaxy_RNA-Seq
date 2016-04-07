@@ -10,7 +10,7 @@ Approximate time: 4 hours
 
 * Understand the theory for each step in the RNA-Seq workflow
 * Become familiar with the terminology and tools used in an RNA-Seq workflow
-* Be able to confidently communicate with bioinformaticians and to understand RNA-Seq workflows in peer-reviewed literature
+* Be able to confidently communicate with bioinformaticians and understand RNA-Seq workflows in peer-reviewed literature
 
 We will be retracing most of the steps required to get from an Illumina FASTQ sequence file received from a sequencing facility as part of an RNA sequencing analysis all the way to transcript assembly and identifying  differentially expressed genes in two different ways. We will focus on the following  steps: initial quality control, read mapping, transcript isoform determination (reference-guided) followed by quantification. This session borrows material from [Jeremy's RNA-seq sample history](https://main.g2.bx.psu.edu/u/jeremy/p/galaxy-rna-seq-analysis-exercise), a [Galaxy workflow](https://usegalaxy.org/u/mejia-guerra/w/basic-rna-seq-analysis---differential-expression-functional-genomics-workshop-2012) and the [UC Davis Bioinformatics Core workshops](http://bioinformatics.ucdavis.edu/training/documentation/). 
 
