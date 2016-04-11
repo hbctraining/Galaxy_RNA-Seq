@@ -27,7 +27,7 @@ In order for you to be able to access Galaxy on your assigned dedicated machine 
 The default Galaxy instance relies on [TopHat/Cufflinks](http://ccb.jhu.edu/software/tophat/index.shtml) for RNA-seq analysis, part of a well-tested workflow system. If you are not interested in discovering splice variants -- which can be prone to false positives -- a simple alignment with TopHat followed by analysis of differential expression with [DESeq](http://bioconductor.org/packages/release/bioc/html/DESeq.html) / [DSS](http://www.bioconductor.org/packages/release/bioc/html/DSS.html) (genes) or [DEXSeq](http://bioconductor.org/packages/release/bioc/html/DEXSeq.html) (exons) is likely to be simpler. For this workshop we added a more recent version ([TopHat2](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2013-14-4-r36)) from the [Galaxy ToolShed](http://toolshed.g2.bx.psu.edu/) to our Galaxy instance, and will be running [edgeR](http://www.bioconductor.org/packages/release/bioc/html/edgeR.html) for the differential expression analysis.
 
 
-## Sequencing dataset
+## Experimental dataset
 
 The dataset we are using is part of a larger study described in [Kenny PJ et al, Cell Rep 2014](http://www.ncbi.nlm.nih.gov/pubmed/25464849). The authors are investigating interactions between various genes involved in Fragile X syndrome, a disease in which there is aberrant production of the FMRP protein. FMRP has been linked to the microRNA pathway, as it has been shown to be involved in miRNA mediated translational suppression. **The authors sought to show that FMRP associates with the RNA helicase MOV10 for regulation of brain mRNAs.**
 
